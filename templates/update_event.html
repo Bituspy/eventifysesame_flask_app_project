@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Update Event{% endblock %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-4">Update Event</h1>
+<form action="{{ url_for('update_event', event_id=event.id) }}" method="POST" class="bg-white p-6 rounded-lg shadow-md max-w-lg">
+    <label for="title" class="block text-gray-700">Event Title</label>
+    <input type="text" id="title" name="title" value="{{ event.title }}" required class="w-full px-4 py-2 mt-2 border rounded-md">
+    
+    <label for="description" class="block mt-4 text-gray-700">Description</label>
+    <textarea id="description" name="description" required class="w-full px-4 py-2 mt-2 border rounded-md">{{ event.description }}</textarea>
+    
+    <label for="slots" class="block mt-4 text-gray-700">Available Slots</label>
+    <input type="number" id="slots" name="slots" value="{{ event.slots }}" required class="w-full px-4 py-2 mt-2 border rounded-md">
+    
+    <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Update Event</button>
+</form>
+
+{% endblock %}

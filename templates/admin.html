@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard{% endblock %}
+{% block content %}
+
+<h1 class="text-2xl font-bold mb-4">Admin Dashboard</h1>
+
+<!-- Create Event Form -->
+<h2 class="text-xl font-semibold mb-2">Create New Event</h2>
+<form action="{{ url_for('admin') }}" method="POST" class="bg-white p-6 rounded-lg shadow-md max-w-lg">
+    <label for="title" class="block text-gray-700">Event Title</label>
+    <input type="text" id="title" name="title" required class="w-full px-4 py-2 mt-2 border rounded-md">
+    
+    <label for="description" class="block mt-4 text-gray-700">Description</label>
+    <textarea id="description" name="description" required class="w-full px-4 py-2 mt-2 border rounded-md"></textarea>
+    
+    <label for="slots" class="block mt-4 text-gray-700">Available Slots</label>
+    <input type="number" id="slots" name="slots" required class="w-full px-4 py-2 mt-2 border rounded-md">
+    
+    <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Create Event</button>
+</form>
+
+<!-- List of Events with Edit and Delete Options -->
+<h2 class="text-xl font-semibold mt-8 mb-4">Manage Events</h2>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% for event in events %}
+    <div class="bg-white p-4 rounded-lg shadow-md">
+        <h3 class="text-lg font-semibold">{{ event.title }}</h3>
+        <p class="text-gray-600">{{ event.description }}</p>
+        <p class="text-gray-800 mb-2">Available Slots: {{ event.slots }}</p>
+        <a href="{{ url_for('update_event', event_id=event.id) }}" class="text-blue-500">Edit</a> |
+        <a href="{{ url_for('delete_event', event_id=event.id) }}" class="text-red-500">Delete</a>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
