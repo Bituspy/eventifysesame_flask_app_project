@@ -1,10 +1,12 @@
 {% extends "base.html" %}
-{% block title %}Admin Dashboard{% endblock %}
+{% block title %}EventifySESAME Admin{% endblock %}
 {% block content %}
 
-<h1 class="text-2xl font-bold mb-4">Admin Dashboard</h1>
 
-<!-- Create Event Form -->
+
+<h1 class="text-2xl font-bold mb-4">Event management</h1>
+
+
 <h2 class="text-xl font-semibold mb-2">Create New Event</h2>
 <form action="{{ url_for('admin') }}" method="POST" class="bg-white p-6 rounded-lg shadow-md max-w-lg">
     <label for="title" class="block text-gray-700">Event Title</label>
@@ -16,10 +18,87 @@
     <label for="slots" class="block mt-4 text-gray-700">Available Slots</label>
     <input type="number" id="slots" name="slots" required class="w-full px-4 py-2 mt-2 border rounded-md">
     
+    <label for="latitude" class="block mt-4 text-gray-700">Latitude</label>
+    <input type="text" id="latitude" name="latitude" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
+
+    <label for="longitude" class="block mt-4 text-gray-700">Longitude</label>
+    <input type="text" id="longitude" name="longitude" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
+    
+    <div id="map" class="w-full h-64 mt-4 mb-4 border"></div>
+
     <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Create Event</button>
 </form>
 
-<!-- List of Events with Edit and Delete Options -->
+<script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('JavaScript Loaded!'); 
+
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            console.error('Map container not found!');
+            return;
+        }
+
+ 
+        const initialLongitude = 0;
+        const initialLatitude = 0;
+
+        const map = new ol.Map({
+            target: 'map', 
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([initialLongitude, initialLatitude]), 
+                zoom: 2
+            })
+        });
+
+
+        const vectorSource = new ol.source.Vector();
+
+
+        const markerLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+
+        map.addLayer(markerLayer);
+
+
+        function updateMarker(longitude, latitude) {
+            const coordinates = ol.proj.fromLonLat([longitude, latitude]);
+            const marker = new ol.Feature({
+                geometry: new ol.geom.Point(coordinates)
+            });
+            vectorSource.clear(); 
+            vectorSource.addFeature(marker); 
+        }
+
+  
+        const initialLat = parseFloat(document.getElementById('latitude').value) || initialLatitude;
+        const initialLon = parseFloat(document.getElementById('longitude').value) || initialLongitude;
+        updateMarker(initialLon, initialLat);
+
+
+        map.on('click', function (event) {
+            const coordinates = ol.proj.toLonLat(event.coordinate);
+            console.log('Clicked coordinates:', coordinates);
+            document.getElementById('latitude').value = coordinates[1].toFixed(6);
+            document.getElementById('longitude').value = coordinates[0].toFixed(6);
+
+
+            updateMarker(coordinates[0], coordinates[1]);
+            console.log(coordinates[0], coordinates[1]);
+        });
+    });
+</script>
+
+
 <h2 class="text-xl font-semibold mt-8 mb-4">Manage Events</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for event in events %}
@@ -27,8 +106,27 @@
         <h3 class="text-lg font-semibold">{{ event.title }}</h3>
         <p class="text-gray-600">{{ event.description }}</p>
         <p class="text-gray-800 mb-2">Available Slots: {{ event.slots }}</p>
+        <p class="text-gray-800 mb-2">Location: Latitude: {{ event.latitude }}, Longitude: {{ event.longitude }}</p>
+        
+ 
         <a href="{{ url_for('update_event', event_id=event.id) }}" class="text-blue-500">Edit</a> |
         <a href="{{ url_for('delete_event', event_id=event.id) }}" class="text-red-500">Delete</a>
+
+
+        <h4 class="text-md font-semibold mt-4">Participations</h4>
+        <div class="overflow-y-auto max-h-40 border-t border-gray-200 mt-2 pt-2">
+            {% if participations_by_event.get(event.id) %}
+                <ul class="list-disc ml-4">
+                    {% for participant in participations_by_event[event.id] %}
+                        <li class="text-gray-700">
+                            {{ participant }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p class="text-gray-500">No participations yet.</p>
+            {% endif %}
+        </div>
     </div>
     {% endfor %}
 </div>

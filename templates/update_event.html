@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% block title %}Update Event{% endblock %}
+{% block title %}EventifySESAME Update Event{% endblock %}
 {% block content %}
+
 
 <h1 class="text-2xl font-bold mb-4">Update Event</h1>
 <form action="{{ url_for('update_event', event_id=event.id) }}" method="POST" class="bg-white p-6 rounded-lg shadow-md max-w-lg">
@@ -12,8 +13,72 @@
     
     <label for="slots" class="block mt-4 text-gray-700">Available Slots</label>
     <input type="number" id="slots" name="slots" value="{{ event.slots }}" required class="w-full px-4 py-2 mt-2 border rounded-md">
+
+    <label for="latitude" class="block mt-4 text-gray-700">Latitude</label>
+    <input type="text" id="latitude" name="latitude" value="{{ event.latitude }}" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
+
+    <label for="longitude" class="block mt-4 text-gray-700">Longitude</label>
+    <input type="text" id="longitude" name="longitude" value="{{ event.longitude }}" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
     
+    <div id="map" class="w-full h-64 mt-4 mb-4 border"></div>
+
     <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Update Event</button>
 </form>
+
+<script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        console.log('JavaScript Loaded!'); 
+
+        const latitude = parseFloat("{{ event.latitude }}");
+        const longitude = parseFloat("{{ event.longitude }}");
+
+        const mapContainer = document.getElementById('map');
+        if (!mapContainer) {
+            console.error('Map container not found!');
+            return;
+        }
+
+        const map = new ol.Map({
+            target: 'map',
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([longitude, latitude]), 
+                zoom: 12
+            })
+        });
+
+
+        const marker = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude]))
+        });
+
+        const vectorSource = new ol.source.Vector({
+            features: [marker]
+        });
+
+        const markerLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+
+        map.addLayer(markerLayer);
+
+        map.on('click', function (event) {
+            const coordinates = ol.proj.toLonLat(event.coordinate);
+            console.log('Clicked coordinates:', coordinates);
+            document.getElementById('latitude').value = coordinates[1].toFixed(6);
+            document.getElementById('longitude').value = coordinates[0].toFixed(6);
+
+
+            marker.setGeometry(new ol.geom.Point(event.coordinate));
+        });
+    });
+</script>
 
 {% endblock %}

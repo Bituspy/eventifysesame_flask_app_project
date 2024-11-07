@@ -1,25 +1,241 @@
 {% extends "base.html" %}
-{% block title %}Home{% endblock %}
+
+{% block title %}EventifySESAME Events{% endblock %}
+
 {% block content %}
+<style>
+    .button-gradient {
+        background: linear-gradient(90deg, #b69dd9, #b8a7d7, #b1a1d6, #b2a3d8);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.375rem;
+        text-align: center;
+        display: inline-block;
+        font-weight: bold;
+        text-decoration: none;
+        transition: background 0.3s ease;
+    }
+
+    .button-gradient-error {
+        background: radial-gradient(circle at 81.9% 53.5%, rgb(173, 53, 53) 16.3%, rgb(240, 60, 60) 100.2%);
+        color: white;
+        padding: 0.5rem 1.5rem;
+        border-radius: 0.375rem;
+        text-align: center;
+        display: inline-block;
+        font-weight: bold;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .button-gradient:hover {
+        background: linear-gradient(90deg, #9f87c1, #9e8db6, #9c8eb5, #9e93b8);
+    }
+
+    .button-gradient-error:hover {
+        background-color: gray;
+    }
+
+    /* Modal Styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto;
+        background-color: rgb(0, 0, 0);
+        background-color: rgba(0, 0, 0, 0.4);
+        padding-top: 60px;
+    }
+
+    .modal-content {
+        background-color: #fefefe;
+        margin: 5% auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+    }
+
+    .close {
+        color: #aaa;
+        float: right;
+        font-size: 28px;
+        font-weight: bold;
+    }
+
+    .close:hover,
+    .close:focus {
+        color: black;
+        text-decoration: none;
+        cursor: pointer;
+    }
+
+    /* Placeholder event styles */
+    .placeholder-card {
+        background: #f0f0f0;
+        border: 2px dashed #d3d3d3;
+        opacity: 0.6;
+        animation: pulse 1.5s infinite ease-in-out;
+        transition: opacity 0.3s ease;
+    }
+
+    .placeholder-card h2,
+    .placeholder-card p {
+        background-color: #dcdcdc;
+        height: 20px;
+        margin: 10px 0;
+        border-radius: 4px;
+    }
+
+    .placeholder-card .button-gradient {
+        background: #d3d3d3;
+        pointer-events: none;
+    }
+
+    @keyframes pulse {
+        0% {
+            opacity: 0.6;
+        }
+        50% {
+            opacity: 0.8;
+        }
+        100% {
+            opacity: 0.6;
+        }
+    }
+</style>
 
 <h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Upcoming Events</h1>
+
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {% set total_cards = 9 %}  <!-- Set the total number of cards to display -->
+    {% set total_placeholder_cards = total_cards - events|length %}  <!-- Calculate remaining placeholder cards -->
+
     {% for event in events %}
-    <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-200">
-        <h2 class="text-xl font-semibold mb-2 text-blue-600">{{ event.title }}</h2>
-        <p class="text-gray-600">{{ event.description }}</p>
-        <p class="text-gray-700 mt-2">Available Slots: <span class="font-semibold">{{ event.slots }}</span></p>
-        {% if current_user.is_authenticated %}
-            {% if event.slots > 0 %}
-                <a href="{{ url_for('participate', event_id=event.id) }}" class="block mt-4 bg-blue-500 text-white px-4 py-2 rounded text-center">Participate</a>
+        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-200">
+            <h2 class="text-xl font-semibold mb-2 text-blue-600">{{ event.title }}</h2>
+            <p class="text-gray-600">{{ event.description }}</p>
+            <p class="text-gray-700 mt-2">Available Slots: <span class="font-semibold">{{ event.slots }}</span></p>
+
+            {% if current_user.is_authenticated %}
+                {% if event.slots > 0 %}
+                    <a href="{{ url_for('participate', event_id=event.id) }}" class="block mt-4 button-gradient text-center">Participate</a>
+                {% else %}
+                    <span class="block mt-4 button-gradient-error text-center">Full</span>
+                {% endif %}
             {% else %}
-                <span class="block mt-4 bg-red-500 text-white px-4 py-2 rounded text-center">Full</span>
+                <p class="text-gray-500 italic mt-4">Log in to participate</p>
             {% endif %}
-        {% else %}
-            <p class="text-gray-500 italic mt-4">Log in to participate</p>
-        {% endif %}
-    </div>
+
+            <button class="block mt-4 button-gradient text-center" 
+                onclick="openModal({{ event.id }}, {{ event.longitude if event.longitude is not none else 0 }}, {{ event.latitude if event.latitude is not none else 0 }}, '{{ event.title | escape }}')">
+                See on Map
+            </button>
+        </div>
+
+        <div id="mapModal-{{ event.id }}" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal({{ event.id }})">&times;</span>
+                <div id="map-{{ event.id }}" class="w-full h-64 mt-4 mb-4 border"></div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <!-- Add placeholder cards if needed -->
+    {% for i in range(total_placeholder_cards) %}
+        <div class="bg-white rounded-lg shadow-md p-6 placeholder-card">
+            <h2 class="text-xl font-semibold mb-2">Loading...</h2>
+            <p class="text-gray-600">Please wait, events are loading.</p>
+            <p class="text-gray-700 mt-2">Available Slots: <span class="font-semibold">N/A</span></p>
+            <a href="#" class="block mt-4 button-gradient">Coming Soon</a>
+        </div>
     {% endfor %}
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">
+<script>
+    const maps = {};
+
+    function initMap(eventId, longitude, latitude, eventName) {
+        const map = new ol.Map({
+            target: 'map-' + eventId,
+            layers: [
+                new ol.layer.Tile({
+                    source: new ol.source.OSM()
+                })
+            ],
+            view: new ol.View({
+                center: ol.proj.fromLonLat([longitude, latitude]),
+                zoom: 10
+            })
+        });
+
+        const marker = new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.fromLonLat([longitude, latitude]))
+        });
+
+        const markerStyle = new ol.style.Style({
+            image: new ol.style.Icon({
+                src: 'https://i.imgur.com/5sGvm5x.png',
+                scale: 1 
+            })
+        });
+
+        marker.setStyle(markerStyle);
+
+        const vectorSource = new ol.source.Vector({
+            features: [marker]
+        });
+
+        const markerLayer = new ol.layer.Vector({
+            source: vectorSource
+        });
+
+        map.addLayer(markerLayer);
+
+        const overlay = new ol.Overlay({
+            element: createLabelElement(eventName),
+            position: ol.proj.fromLonLat([longitude, latitude]),
+            positioning: 'bottom-center',
+            stopEvent: false
+        });
+
+        map.addOverlay(overlay);
+
+        maps[eventId] = map;
+    }
+
+    function createLabelElement(eventName) {
+        const label = document.createElement('div');
+        label.className = 'event-label';
+        label.innerHTML = eventName;
+        label.style.backgroundColor = 'white';
+        label.style.margin = '20px';
+        label.style.padding = '2px 5px';
+        label.style.borderRadius = '4px';
+        label.style.boxShadow = '0px 0px 4px rgba(0, 0, 0, 0.2)';
+        label.style.fontSize = '12px';
+        label.style.color = 'black';
+        return label;
+    }
+
+    function openModal(eventId, longitude, latitude, eventName) {
+        if (longitude === 0 || latitude === 0) {
+            console.warn('Map coordinates are not defined, using default values.');
+        }
+
+        initMap(eventId, longitude, latitude, eventName);
+
+        document.getElementById('mapModal-' + eventId).style.display = "block";
+    }
+
+    function closeModal(eventId) {
+        document.getElementById('mapModal-' + eventId).style.display = "none";
+    }
+</script>
 
 {% endblock %}
