@@ -38,8 +38,10 @@ A simple web application built with Flask to manage events, allowing users to re
 1. Clone the repository:
 
    ```bash
-   git clone https://github.com/yourusername/events-management-app.git
-   cd events-management-app
+   git clone https://github.com/Bituspy/eventifysesame_flask_app_project.git
+   cd eventifysesame_flask_app_project
+   pip install (REQUIRED pip libraries)
+   py app.py
 
 
 ## Preview 
