@@ -44,6 +44,17 @@ A simple web application built with Flask to manage events, allowing users to re
 
 ## Preview 
 
+Login 
+
+![image](https://github.com/user-attachments/assets/471ac8e6-98dd-4043-9d70-ab6e05a8e2bd)
+
+Register 
+
+![image](https://github.com/user-attachments/assets/044edd3b-5728-4de6-a92d-8a5d2e5a8666)
+
+Account activation mail 
+
+![image](https://github.com/user-attachments/assets/238584d9-8591-4a76-b29a-fa2da6c907bb)
 
 Events (Home page)
 
@@ -53,11 +64,17 @@ Show event location (Map)
 
 ![image](https://github.com/user-attachments/assets/6f155791-b900-4d41-8324-89f2e40549f8)
 
+Event participation mail 
+
+![image](https://github.com/user-attachments/assets/6460be15-ea9c-4049-8337-c3f4a4ad54c5)
+
 Manage Events (Create event)
 
 ![image](https://github.com/user-attachments/assets/2d434120-596f-49cc-af4d-28fda38d6244)
 
 ![image](https://github.com/user-attachments/assets/5b120859-81bb-419e-9e9e-2ed894791059)
+
+
 
 
 
