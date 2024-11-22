@@ -4,30 +4,82 @@
 
 
 
-<h1 class="text-2xl font-bold mb-4">Event management</h1>
+<h1 class="text-3xl font-bold mb-6">Event Management</h1>
+
+<h2 class="text-2xl font-semibold mb-4">Create New Event</h2>
+
+<form action="{{ url_for('admin') }}" method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-2 gap-6 w-full max-w-7xl">
+    
+    <div class="space-y-6">
+
+        <div>
+            <label for="title" class="block text-gray-700 text-lg">Event Title</label>
+            <input type="text" id="title" name="title" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
 
 
-<h2 class="text-xl font-semibold mb-2">Create New Event</h2>
-<form action="{{ url_for('admin') }}" method="POST" class="bg-white p-6 rounded-lg shadow-md max-w-lg">
-    <label for="title" class="block text-gray-700">Event Title</label>
-    <input type="text" id="title" name="title" required class="w-full px-4 py-2 mt-2 border rounded-md">
-    
-    <label for="description" class="block mt-4 text-gray-700">Description</label>
-    <textarea id="description" name="description" required class="w-full px-4 py-2 mt-2 border rounded-md"></textarea>
-    
-    <label for="slots" class="block mt-4 text-gray-700">Available Slots</label>
-    <input type="number" id="slots" name="slots" required class="w-full px-4 py-2 mt-2 border rounded-md">
-    
-    <label for="latitude" class="block mt-4 text-gray-700">Latitude</label>
-    <input type="text" id="latitude" name="latitude" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
+        <div>
+            <label for="description" class="block text-gray-700 text-lg">Description</label>
+            <textarea id="description" name="description" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" style="height: 110px;"></textarea>
+        </div>
 
-    <label for="longitude" class="block mt-4 text-gray-700">Longitude</label>
-    <input type="text" id="longitude" name="longitude" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
-    
-    <div id="map" class="w-full h-64 mt-4 mb-4 border"></div>
+        <div>
+            <label for="slots" class="block text-gray-700 text-lg">Available Slots</label>
+            <input type="number" id="slots" name="slots" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
 
-    <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Create Event</button>
+
+        <div>
+            <label for="event_date" class="block text-gray-700 text-lg">Event Date</label>
+            <input type="date" id="event_date" name="event_date" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+
+        <div>
+            <label for="event_time" class="block text-gray-700 text-lg">Event Time</label>
+            <input type="time" id="event_time" name="event_time" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+
+       
+    </div>
+
+    <div class="space-y-6">
+         <div>
+            <label for="image" class="block text-gray-700 text-lg">Event Picture</label>
+            <input type="file" name="image" id="image" class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div>
+            <label for="latitude" class="block text-gray-700 text-lg">Latitude</label>
+            <input type="text" id="latitude" name="latitude" required readonly class="w-full px-4 py-2 mt-2 border rounded-md bg-gray-100 cursor-not-allowed">
+        </div>
+
+        <div>
+            <label for="longitude" class="block text-gray-700 text-lg">Longitude</label>
+            <input type="text" id="longitude" name="longitude" required readonly class="w-full px-4 py-2 mt-2 border rounded-md bg-gray-100 cursor-not-allowed">
+        </div>
+
+        <div>
+            <div id="map" class="w-full h-64 mt-4 mb-4 border"></div>
+        </div>
+    </div>
+
+
+  <div class="col-span-1 md:col-span-2 text-center flex justify-center space-x-4">
+
+    <button type="submit" class="mt-5 bg-blue-500 text-white px-8 py-4 rounded-lg text-xl flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all">
+        <i class="fas fa-check-circle mr-2"></i> Create Event
+    </button>
+
+
+    <button type="reset" class="mt-5 bg-gray-500 text-white px-8 py-4 rounded-lg text-xl flex items-center justify-center hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all">
+        <i class="fas fa-undo-alt mr-2"></i> Reset
+    </button>
+</div>
+
 </form>
+
 
 <script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">
@@ -102,25 +154,32 @@
 <h2 class="text-xl font-semibold mt-8 mb-4">Manage Events</h2>
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for event in events %}
-    <div class="bg-white p-4 rounded-lg shadow-md">
-        <h3 class="text-lg font-semibold">{{ event.title }}</h3>
-        <p class="text-gray-600">{{ event.description }}</p>
-        <p class="text-gray-800 mb-2">Available Slots: {{ event.slots }}</p>
-        <p class="text-gray-800 mb-2">Location: Latitude: {{ event.latitude }}, Longitude: {{ event.longitude }}</p>
+    <div class="bg-white p-6 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300">
+        <!-- Event Title and Description -->
+        <h3 class="text-lg font-semibold text-gray-800 mb-2">{{ event.title }}</h3>
+        <p class="text-gray-600 mb-4">{{ event.description }}</p>
         
- 
-        <a href="{{ url_for('update_event', event_id=event.id) }}" class="text-blue-500">Edit</a> |
-        <a href="{{ url_for('delete_event', event_id=event.id) }}" class="text-red-500">Delete</a>
+        <!-- Event Details (Slots, Location) -->
+        <p class="text-gray-800 mb-2"><strong>Available Slots:</strong> {{ event.slots }}</p>
+        <p class="text-gray-800 mb-4"><strong>Location:</strong> Latitude: {{ event.latitude }}, Longitude: {{ event.longitude }}</p>
 
+        <!-- Edit and Delete Links with Icons -->
+        <div class="flex space-x-3 text-sm text-gray-700 mt-2">
+            <a href="{{ url_for('update_event', event_id=event.id) }}" class="flex items-center text-blue-500 hover:text-blue-700">
+                <i class="fas fa-edit mr-2"></i> Edit
+            </a>
+            <a href="{{ url_for('delete_event', event_id=event.id) }}" class="flex items-center text-red-500 hover:text-red-700">
+                <i class="fas fa-trash-alt mr-2"></i> Delete
+            </a>
+        </div>
 
-        <h4 class="text-md font-semibold mt-4">Participations</h4>
+        <!-- Participations Section -->
+        <h4 class="text-md font-semibold mt-4 text-gray-800">Participations</h4>
         <div class="overflow-y-auto max-h-40 border-t border-gray-200 mt-2 pt-2">
             {% if participations_by_event.get(event.id) %}
-                <ul class="list-disc ml-4">
+                <ul class="list-disc ml-6 text-gray-700">
                     {% for participant in participations_by_event[event.id] %}
-                        <li class="text-gray-700">
-                            {{ participant }}
-                        </li>
+                        <li>{{ participant }}</li>
                     {% endfor %}
                 </ul>
             {% else %}

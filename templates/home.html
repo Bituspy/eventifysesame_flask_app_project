@@ -107,34 +107,73 @@
         }
     }
 </style>
+{% if events %}
+<h1 class="text-3xl font-bold mb-8 text-center text-gray-900">Upcoming Events</h1>
+{% endif %}
 
-<h1 class="text-3xl font-bold mb-6 text-center text-gray-800">Upcoming Events</h1>
+{% if events_api %}
+<h1 class="text-3xl font-bold mb-8 text-center text-gray-900">Upcoming Events from External API (Tailor Ticket API)</h1>
+{% endif %}
 
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    {% set total_cards = 9 %}  <!-- Set the total number of cards to display -->
-    {% set total_placeholder_cards = total_cards - events|length %}  <!-- Calculate remaining placeholder cards -->
 
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+     {% set total_cards = 9 %}
+    {% set total_placeholder_cards = total_cards - line_count %} 
+    {% if events %}
+    
+    
     {% for event in events %}
-        <div class="bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition duration-200">
-            <h2 class="text-xl font-semibold mb-2 text-blue-600">{{ event.title }}</h2>
-            <p class="text-gray-600">{{ event.description }}</p>
-            <p class="text-gray-700 mt-2">Available Slots: <span class="font-semibold">{{ event.slots }}</span></p>
+   
+        <div class="bg-white rounded-lg shadow-xl p-6 transition duration-300 transform hover:scale-105 hover:shadow-2xl">
+            <h2 class="text-2xl font-semibold mb-3 text-blue-600 flex items-center">
+                <i class="fas fa-calendar-alt mr-2 text-blue-400"></i> {{ event.title }}
+            </h2>
+             {% if event.image_url %}
+                <img src="{{ url_for('static', filename=event.image_url) }}" alt="{{ event.title }}" class="w-full h-48 object-cover rounded-lg mb-4">
+            {% endif %}
+
+            <div class="description-block bg-gray-200 text-gray-700 p-4 overflow-y-auto" style="max-height: 120px; min-height: 120px;">
+                <p class="mb-4">{{ event.description }}</p>
+            </div>
+
+            <div class="text-gray-700">
+                <p><i class="fas fa-users mr-2 text-gray-500"></i> Available Slots: <span class="font-semibold">{{ event.slots }}</span></p>
+                <p><i class="fas fa-calendar-day mr-2 text-gray-500"></i> Date: {{ event.event_date }} | Time: {{ event.event_time }}</p>
+                <p><i class="fas fa-map-marker-alt mr-2 text-gray-500"></i> Location: {{ event.location_name }}</p>
+            
+            </div>
 
             {% if current_user.is_authenticated %}
-                {% if event.slots > 0 %}
-                    <a href="{{ url_for('participate', event_id=event.id) }}" class="block mt-4 button-gradient text-center">Participate</a>
+                {% if event.participated %}
+
+                    <span class="block mt-4 px-6 py-2 bg-red-600 text-white font-semibold text-center rounded-md cursor-not-allowed">
+                        <i class="fas fa-times-circle mr-2"></i> You Already Participated
+                    </span>
+                {% elif event.slots > 0 %}
+
+                    <a href="{{ url_for('participate', event_id=event.id) }}" class="block mt-4 px-6 py-2 bg-blue-600 text-white font-semibold text-center rounded-md hover:bg-blue-700 transition duration-200">
+                        <i class="fas fa-check-circle mr-2"></i> Participate
+                    </a>
                 {% else %}
-                    <span class="block mt-4 button-gradient-error text-center">Full</span>
+
+                    <span class="block mt-4 px-6 py-2 bg-gray-500 text-white font-semibold text-center rounded-md cursor-not-allowed">
+                        <i class="fas fa-times-circle mr-2"></i> Full
+                    </span>
                 {% endif %}
             {% else %}
                 <p class="text-gray-500 italic mt-4">Log in to participate</p>
             {% endif %}
 
-            <button class="block mt-4 button-gradient text-center" 
+            <a class="block mt-4 px-6 py-2 bg-green-500 text-white font-semibold text-center rounded-md hover:bg-green-600 transition duration-200 cursor-pointer" 
                 onclick="openModal({{ event.id }}, {{ event.longitude if event.longitude is not none else 0 }}, {{ event.latitude if event.latitude is not none else 0 }}, '{{ event.title | escape }}')">
-                See on Map
-            </button>
+                <i class="fas fa-map-marker-alt mr-2"></i> See on Map
+            </a>
+
+            <a href="{{ url_for('event_weather', event_id=event.id) }}" class="mt-4 block px-6 py-2 bg-yellow-500 text-white font-semibold text-center rounded-md hover:bg-yellow-600 transition duration-200">
+                <i class="fas fa-cloud-sun mr-2"></i> Show Weather
+            </a>
         </div>
+
 
         <div id="mapModal-{{ event.id }}" class="modal">
             <div class="modal-content">
@@ -143,17 +182,60 @@
             </div>
         </div>
     {% endfor %}
+    {% endif %}
 
-    <!-- Add placeholder cards if needed -->
+
+     {% if events_api %}
+     {% for event_api in events_api %}
+    <div class="bg-white rounded-lg shadow-md p-6">
+        <h2 class="text-xl font-semibold mb-2 text-gray-800">{{ event_api.name }}</h2>
+        
+        <!-- Render description, ensuring it handles HTML safely -->
+        <div class="text-gray-700 mb-2">
+            {% if event_api.description %}
+                {{ event_api.description|safe }}
+            {% else %}
+                <p>No description available.</p>
+            {% endif %}
+        </div>
+
+        <!-- Format start and end times -->
+        <p class="text-gray-700 mt-2">
+            <strong>Start Time:</strong> {{ event_api.start.formatted }}<br>
+            <strong>End Time:</strong> {{ event_api.end.formatted }}
+        </p>
+
+        <!-- Render event location -->
+        <p class="text-gray-700 mt-2">
+            <strong>Location:</strong> {{ event_api.venue.name if event_api.venue else "Location not provided" }}
+        </p>
+
+        <!-- Render event image if available -->
+        {% if event_api.images.thumbnail %}
+            <img src="{{ event_api.images.thumbnail }}" alt="{{ event_api.name }}" class="w-full h-48 object-cover rounded-lg mb-4">
+        {% endif %}
+
+        <!-- Action buttons -->
+        <a href="{{ event_api.url }}" class="block mt-4 px-6 py-2 bg-blue-600 text-white font-semibold text-center rounded-md hover:bg-blue-700 transition duration-200">
+            <i class="fas fa-external-link-alt mr-2"></i> View Event
+        </a>
+    </div>
+{% endfor %}
+     {% endif %}
+
+
     {% for i in range(total_placeholder_cards) %}
-        <div class="bg-white rounded-lg shadow-md p-6 placeholder-card">
-            <h2 class="text-xl font-semibold mb-2">Loading...</h2>
-            <p class="text-gray-600">Please wait, events are loading.</p>
-            <p class="text-gray-700 mt-2">Available Slots: <span class="font-semibold">N/A</span></p>
-            <a href="#" class="block mt-4 button-gradient">Coming Soon</a>
+        <div class="bg-white rounded-lg shadow-md p-6 placeholder-card animate-pulse">
+            <h2 class="text-xl font-semibold mb-2 text-gray-400">Loading...</h2>
+            <p class="text-gray-400">Please wait, events are loading.</p>
+            <p class="text-gray-400 mt-2">Available Slots: <span class="font-semibold">N/A</span></p>
+            <a href="#" class="block mt-4 px-6 py-2 bg-gray-300 text-gray-700 font-semibold text-center rounded-md cursor-not-allowed">Coming Soon</a>
         </div>
     {% endfor %}
 </div>
+
+
+
 
 <script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">

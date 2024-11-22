@@ -1,0 +1,7 @@
+   .step {
+        transition: transform 0.5s ease;
+    }
+    .step-container {
+        display: flex;
+        flex-direction: row;
+    }

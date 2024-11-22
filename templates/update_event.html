@@ -3,27 +3,164 @@
 {% block content %}
 
 
-<h1 class="text-2xl font-bold mb-4">Update Event</h1>
-<form action="{{ url_for('update_event', event_id=event.id) }}" method="POST" class="bg-white p-6 rounded-lg shadow-md max-w-lg">
-    <label for="title" class="block text-gray-700">Event Title</label>
-    <input type="text" id="title" name="title" value="{{ event.title }}" required class="w-full px-4 py-2 mt-2 border rounded-md">
-    
-    <label for="description" class="block mt-4 text-gray-700">Description</label>
-    <textarea id="description" name="description" required class="w-full px-4 py-2 mt-2 border rounded-md">{{ event.description }}</textarea>
-    
-    <label for="slots" class="block mt-4 text-gray-700">Available Slots</label>
-    <input type="number" id="slots" name="slots" value="{{ event.slots }}" required class="w-full px-4 py-2 mt-2 border rounded-md">
+<h1 class="text-3xl font-bold mb-6">Event Management</h1>
 
-    <label for="latitude" class="block mt-4 text-gray-700">Latitude</label>
-    <input type="text" id="latitude" name="latitude" value="{{ event.latitude }}" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
+<h2 class="text-2xl font-semibold mb-4">Update Event</h2>
 
-    <label for="longitude" class="block mt-4 text-gray-700">Longitude</label>
-    <input type="text" id="longitude" name="longitude" value="{{ event.longitude }}" required readonly class="w-full px-4 py-2 mt-2 border rounded-md">
+<form action="{{ url_for('update_event', event_id=event.id) }}" method="POST" enctype="multipart/form-data" class="bg-white p-8 rounded-lg shadow-md max-w-7xl space-y-8">
     
-    <div id="map" class="w-full h-64 mt-4 mb-4 border"></div>
+    <!-- Step 1: Event Title, Description, and Slots -->
+    <div id="step-1" class="step">
+        <h3 class="text-xl font-semibold mb-4">Step 1: Event Details</h3>
+        <div class="space-y-6">
+            <!-- Event Title -->
+            <div>
+                <label for="title" class="block text-gray-700 text-lg">Event Title</label>
+                <input type="text" id="title" name="title" value="{{ event.title }}" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
 
-    <button type="submit" class="mt-4 bg-blue-500 text-white px-4 py-2 rounded">Update Event</button>
+            <!-- Event Description -->
+            <div>
+                <label for="description" class="block text-gray-700 text-lg">Description</label>
+                <textarea id="description" name="description" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" style="height: 110px;">{{ event.description }}</textarea>
+            </div>
+
+            <!-- Available Slots -->
+            <div>
+                <label for="slots" class="block text-gray-700 text-lg">Available Slots</label>
+                <input type="number" id="slots" name="slots" value="{{ event.slots }}" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 2: Event Date & Time -->
+    <div id="step-2" class="step hidden">
+        <h3 class="text-xl font-semibold mb-4">Step 2: Event Timing</h3>
+        <div class="space-y-6">
+            <!-- Event Date -->
+            <div>
+                <label for="event_date" class="block text-gray-700 text-lg">Event Date</label>
+                <input type="date" id="event_date" name="event_date" value="{{ event.event_date }}" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+
+            <!-- Event Time -->
+            <div>
+                <label for="event_time" class="block text-gray-700 text-lg">Event Time</label>
+                <input type="time" id="event_time" name="event_time" value="{{ event.event_time }}" required class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Map Location -->
+    <div id="step-3" class="step hidden">
+        <h3 class="text-xl font-semibold mb-4">Step 3: Location</h3>
+        <div class="space-y-6">
+            <!-- Latitude -->
+            <div>
+                <label for="latitude" class="block text-gray-700 text-lg">Latitude</label>
+                <input type="text" id="latitude" name="latitude" value="{{ event.latitude }}" required readonly class="w-full px-4 py-2 mt-2 border rounded-md bg-gray-100 cursor-not-allowed">
+            </div>
+
+            <!-- Longitude -->
+            <div>
+                <label for="longitude" class="block text-gray-700 text-lg">Longitude</label>
+                <input type="text" id="longitude" name="longitude" value="{{ event.longitude }}" required readonly class="w-full px-4 py-2 mt-2 border rounded-md bg-gray-100 cursor-not-allowed">
+            </div>
+
+            <!-- Map -->
+            <div>
+                <div id="map" class="w-full h-64 mt-4 mb-4 border"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Event Picture -->
+    <div id="step-4" class="step hidden">
+        <h3 class="text-xl font-semibold mb-4">Step 4: Event Picture</h3>
+        <div class="space-y-6">
+            <!-- Event Picture -->
+            <div>
+                <label for="image" class="block text-gray-700 text-lg">Event Picture</label>
+                <input type="file" name="image" id="image" class="w-full px-4 py-2 mt-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
+                {% if event.image_url %}
+                    <div class="mt-4">
+                        <p class="text-gray-600 text-sm">Current Image:</p>
+                        <img src="{{ url_for('static', filename=event.image_url) }}" alt="{{ event.title }}" class="w-full h-48 object-cover rounded-lg mb-4">
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Buttons -->
+    <div class="col-span-1 md:col-span-2 text-center flex justify-between space-x-4">
+        <!-- Previous Button -->
+        <button type="button" id="prev-btn" class="mt-6 bg-gray-500 text-white px-8 py-4 rounded-lg text-xl flex items-center justify-center hover:bg-gray-600 focus:outline-none focus:ring-4 focus:ring-gray-200 transition-all hidden">
+            <i class="fas fa-arrow-left mr-2"></i> Previous
+        </button>
+
+        <!-- Next Button -->
+        <button type="button" id="next-btn" class="mt-6 bg-blue-500 text-white px-8 py-4 rounded-lg text-xl flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all">
+            <i class="fas fa-arrow-right mr-2"></i> Next
+        </button>
+
+        <!-- Submit Button -->
+        <button type="submit" id="submit-btn" class="mt-6 bg-blue-500 text-white px-8 py-4 rounded-lg text-xl flex items-center justify-center hover:bg-blue-600 focus:outline-none focus:ring-4 focus:ring-blue-200 transition-all hidden">
+            <i class="fas fa-check-circle mr-2"></i> Update Event
+        </button>
+    </div>
+
 </form>
+
+<script>
+    let currentStep = 1;
+    const totalSteps = 4;
+    
+    const steps = document.querySelectorAll('.step');
+    const nextBtn = document.getElementById('next-btn');
+    const prevBtn = document.getElementById('prev-btn');
+    const submitBtn = document.getElementById('submit-btn');
+
+    function showStep(step) {
+        steps.forEach((stepElement, index) => {
+            if (index === step - 1) {
+                stepElement.classList.remove('hidden');
+            } else {
+                stepElement.classList.add('hidden');
+            }
+        });
+
+        if (step === totalSteps) {
+            nextBtn.classList.add('hidden');
+            submitBtn.classList.remove('hidden');
+        } else {
+            nextBtn.classList.remove('hidden');
+            submitBtn.classList.add('hidden');
+        }
+
+        if (step === 1) {
+            prevBtn.classList.add('hidden');
+        } else {
+            prevBtn.classList.remove('hidden');
+        }
+    }
+
+    nextBtn.addEventListener('click', () => {
+        if (currentStep < totalSteps) {
+            currentStep++;
+            showStep(currentStep);
+        }
+    });
+
+    prevBtn.addEventListener('click', () => {
+        if (currentStep > 1) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    });
+
+    showStep(currentStep);
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/ol@v10.2.1/dist/ol.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v10.2.1/ol.css">
